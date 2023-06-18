@@ -172,7 +172,7 @@ class Context
      */
     public function defaultOAuth2Config()
     {
-        $config = config('sso-client.oauth2', []);
+        $config = config('ssofy.oauth2', []);
 
         $redirectUri = $config['redirect_uri'];
         if (!is_null($redirectUri)
