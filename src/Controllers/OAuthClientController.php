@@ -45,6 +45,13 @@ class OAuthClientController extends Controller
         $error            = $request->input('error');
         $errorDescription = $request->input('error_description');
 
+        $stateData = $this->context->ssoClient()->continueAuthCodeFlow($state, $code);
+
+        if (empty($stateData) && empty($error)) {
+            $error            = 'invalid_state';
+            $errorDescription = 'Not found or expired state.';
+        }
+
         if (!empty($error)) {
             return view('vendor/ssofy/error', [
                 'status'      => $code,
@@ -54,12 +61,7 @@ class OAuthClientController extends Controller
             ]);
         }
 
-        /*
-         * Redirection
-         */
-        $url = $this->context->ssoClient()->continueAuthCodeFlow($state, $code);
-
-        return redirect($url);
+        return redirect($stateData['uri']);
     }
 
     public function logout(Request $request)
