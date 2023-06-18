@@ -3,22 +3,9 @@
 namespace SSOfy\Laravel;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as LaravelAuthServiceProvider;
-use SSOfy\Laravel\Commands\UserTokenDelete;
-use SSOfy\Laravel\Commands\UserTokenGeneration;
-use SSOfy\Laravel\Commands\UserTokenVerification;
+use SSOfy\Laravel\Events\TokenDeleted;
+use SSOfy\Laravel\Listeners\TokenDeleteListener;
 use SSOfy\Laravel\Middleware\SSOMiddleware;
-use SSOfy\Laravel\Middleware\ResponseMiddleware;
-use SSOfy\Laravel\Middleware\SignatureValidationMiddleware;
-use SSOfy\Laravel\Repositories\APIRepository;
-use SSOfy\Laravel\Repositories\ClientRepository;
-use SSOfy\Laravel\Repositories\Contracts\APIRepositoryInterface;
-use SSOfy\Laravel\Repositories\Contracts\ClientRepositoryInterface;
-use SSOfy\Laravel\Repositories\Contracts\OTPRepositoryInterface;
-use SSOfy\Laravel\Repositories\Contracts\ScopeRepositoryInterface;
-use SSOfy\Laravel\Repositories\Contracts\UserRepositoryInterface;
-use SSOfy\Laravel\Repositories\OTPRepository;
-use SSOfy\Laravel\Repositories\ScopeRepository;
-use SSOfy\Laravel\Repositories\UserRepository;
 
 class ServiceProvider extends LaravelAuthServiceProvider
 {
@@ -33,30 +20,17 @@ class ServiceProvider extends LaravelAuthServiceProvider
     {
         $this->registerPublishes();
 
-        $this->registerCommands();
-
         $this->registerPolicies();
 
         $this->setupBindings();
+
+        $this->setupListeners();
 
         $this->registerAuthProvider();
 
         $this->registerMiddleware();
 
         $this->registerRoutes();
-    }
-
-    public function registerCommands()
-    {
-        if (!$this->app->runningInConsole()) {
-            return;
-        }
-
-        $this->commands([
-            UserTokenGeneration::class,
-            UserTokenVerification::class,
-            UserTokenDelete::class,
-        ]);
     }
 
     protected function registerPublishes()
@@ -67,26 +41,8 @@ class ServiceProvider extends LaravelAuthServiceProvider
 
         // config
         $this->publishes([
-            __DIR__ . '/../config/ssofy.php'      => config_path('ssofy.php'),
-            __DIR__ . '/../config/sso-client.php' => config_path('sso-client.php'),
+            __DIR__ . '/../config/ssofy.php' => config_path('ssofy.php'),
         ], ['ssofy', 'ssofy:config']);
-
-        // routes
-        $this->publishes([
-            __DIR__ . '/../routes/ssofy.php' => base_path('/routes/ssofy.php'),
-        ], ['ssofy', 'ssofy:routes']);
-
-        // views
-        $this->publishes([
-            __DIR__ . '/../scaffold/resources/views/' => base_path('resources/views/vendor/ssofy/'),
-        ], ['ssofy', 'ssofy:views']);
-
-        if (!class_exists('CreateUserSocialLinksTable')) {
-            $this->publishes([
-                __DIR__ . '/../database/migrations/add_missing_columns_to_users_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_add_missing_columns_to_users_table.php'),
-                __DIR__ . '/../database/migrations/create_user_social_links_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_user_social_links_table.php'),
-            ], ['ssofy', 'ssofy:migrations']);
-        }
     }
 
     private function setupBindings()
@@ -94,12 +50,14 @@ class ServiceProvider extends LaravelAuthServiceProvider
         $this->app->singleton(Context::class);
 
         $this->app->bind('ssofy', Context::class);
+    }
 
-        $this->app->singleton(ClientRepositoryInterface::class, config('ssofy.repository.client', ClientRepository::class));
-        $this->app->singleton(ScopeRepositoryInterface::class, config('ssofy.repository.scope', ScopeRepository::class));
-        $this->app->singleton(UserRepositoryInterface::class, config('ssofy.repository.user', UserRepository::class));
-        $this->app->singleton(OTPRepositoryInterface::class, config('ssofy.repository.otp', OTPRepository::class));
-        $this->app->singleton(APIRepositoryInterface::class, config('ssofy.repository.api', APIRepository::class));
+    private function setupListeners()
+    {
+        /** @var \Illuminate\Contracts\Events\Dispatcher::class $events */
+        $events = app(\Illuminate\Contracts\Events\Dispatcher::class);
+
+        $events->listen(TokenDeleted::class, TokenDeleteListener::class);
     }
 
     private function registerAuthProvider()
@@ -118,25 +76,13 @@ class ServiceProvider extends LaravelAuthServiceProvider
 
     private function registerMiddleware()
     {
-        $router = $this->app['router'];
-
-        $router->aliasMiddleware('ssofy.signature', SignatureValidationMiddleware::class);
-        $router->aliasMiddleware('ssofy.response', ResponseMiddleware::class);
-        $router->aliasMiddleware('ssofy', SSOMiddleware::class);
+        $this->app['router']->aliasMiddleware('ssofy', SSOMiddleware::class);
     }
 
     private function registerRoutes()
     {
-        $router = $this->app['router'];
+        $routeFile = base_path(__DIR__ . '/../routes/ssofy.php');
 
-        $routeFile = base_path('routes/ssofy.php');
-
-        if (!file_exists($routeFile)) {
-            return;
-        }
-
-        $router->prefix('/')
-               ->middleware(ResponseMiddleware::class)
-               ->group($routeFile);
+        $this->app['router']->prefix('/')->group($routeFile);
     }
 }
