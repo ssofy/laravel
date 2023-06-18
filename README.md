@@ -1,4 +1,4 @@
-SSOfy Laravel Package
+SSOfy Laravel (Client) Package
 =============
 
 #### Official [SSOfy](https://www.ssofy.com) Laravel Package.
