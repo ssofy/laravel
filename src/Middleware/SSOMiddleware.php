@@ -22,6 +22,11 @@ class SSOMiddleware
     private $context;
 
     /**
+     * @var Session
+     */
+    private $session;
+
+    /**
      * @var OAuth2Config
      */
     private $oauthConfig;
@@ -30,6 +35,7 @@ class SSOMiddleware
     {
         $this->auth        = $auth;
         $this->context     = $context;
+        $this->session     = $session;
         $this->oauthConfig = $this->context->defaultOAuth2Config();
     }
 
@@ -40,7 +46,7 @@ class SSOMiddleware
         $oauth2Client = $this->context->ssoClient();
 
         if ($request->acceptsHtml()) {
-            $state = $oauth2Client->getSessionState();
+            $state = $this->getSessionState();
         }
 
         try {
@@ -81,7 +87,7 @@ class SSOMiddleware
         }
 
         if ($request->acceptsHtml()) {
-            return $this->context->ssoClient()->initAuthCodeFlow($request->getRequestUri());
+            return $this->context->initiateAuthorization($request->getRequestUri());
         }
 
         return null;
@@ -95,7 +101,7 @@ class SSOMiddleware
         if ($passive) {
             return $next($request);
         } elseif ($redirect) {
-            throw new AuthenticationException('401 Unauthorized', [], $this->redirectTo($request));
+            throw new AuthenticationException('401 Unauthorized', [], $this->redirectTo($request)->getTargetUrl());
         } else {
             return response()->make(
                 view('vendor.ssofy.error', [
@@ -107,5 +113,10 @@ class SSOMiddleware
                 401
             );
         }
+    }
+
+    private function getSessionState()
+    {
+        return $this->session->get(Context::OAUTH2_WORKFLOW_STATE_SESSION_KEY);
     }
 }
