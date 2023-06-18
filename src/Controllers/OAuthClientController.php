@@ -3,10 +3,11 @@
 namespace SSOfy\Laravel\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use SSOfy\Laravel\Context;
 
-class OAuthClientController extends AbstractController
+class OAuthClientController extends Controller
 {
     /**
      * @var Context

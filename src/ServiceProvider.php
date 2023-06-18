@@ -81,7 +81,7 @@ class ServiceProvider extends LaravelAuthServiceProvider
 
     private function registerRoutes()
     {
-        $routeFile = base_path(__DIR__ . '/../routes/ssofy.php');
+        $routeFile = __DIR__ . '/../routes/ssofy.php';
 
         $this->app['router']->prefix('/')->group($routeFile);
     }

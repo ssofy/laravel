@@ -41,6 +41,11 @@ class ServiceGuard implements Guard
     protected $context;
 
     /**
+     * @var Session
+     */
+    private $session;
+
+    /**
      * @var APIClient
      */
     protected $client;
@@ -55,11 +60,12 @@ class ServiceGuard implements Guard
      */
     protected $token;
 
-    public function __construct(UserProvider $provider, Request $request, Context $context)
+    public function __construct(UserProvider $provider, Request $request, Context $context, Session $session)
     {
         $this->provider = $provider;
         $this->request  = $request;
         $this->context  = $context;
+        $this->session  = $session;
 
         $this->client = new APIClient($context->defaultAPIConfig());
 
@@ -149,7 +155,7 @@ class ServiceGuard implements Guard
     public function token()
     {
         if ($this->request->acceptsHtml()) {
-            $state       = $this->oauth2Client->getSessionState();
+            $state       = $this->getSessionState();
             $accessToken = $this->oauth2Client->getAccessToken($state);
         } else {
             $accessToken = $this->request->header('Authorization');
@@ -167,5 +173,10 @@ class ServiceGuard implements Guard
         }
 
         return $this->token;
+    }
+
+    private function getSessionState()
+    {
+        return $this->session->get(Context::OAUTH2_WORKFLOW_STATE_SESSION_KEY);
     }
 }
