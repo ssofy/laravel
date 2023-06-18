@@ -205,8 +205,8 @@ class Context
     {
         $state = $this->ssoClient($config)->initAuthCodeFlow($uri, $nextUri);
 
-        $this->session->put(self::OAUTH2_WORKFLOW_STATE_SESSION_KEY, $state);
+        $this->session->put(self::OAUTH2_WORKFLOW_STATE_SESSION_KEY, $state['state']);
 
-        return redirect($uri);
+        return redirect($state['uri']);
     }
 }
