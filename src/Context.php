@@ -177,9 +177,9 @@ class Context
         $redirectUri = $config['redirect_uri'];
         if (!is_null($redirectUri)
             && !(
-                str_starts_with($redirectUri, 'http://')
-                || str_starts_with($redirectUri, 'https://')
-                || str_starts_with($redirectUri, '//')
+                substr($redirectUri, 0, 7) === 'http://'
+                || substr($redirectUri, 0, 8) === 'https://'
+                || substr($redirectUri, 0, 2) === '//'
             )
         ) {
             $redirectUri = app('url')->to($config['redirect_uri']);
