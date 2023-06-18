@@ -5,12 +5,9 @@ namespace SSOfy\Laravel\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use SSOfy\Laravel\Context;
-use SSOfy\Laravel\Traits\Validation;
 
 class OAuthClientController extends AbstractController
 {
-    use Validation;
-
     /**
      * @var Context
      */
@@ -32,7 +29,12 @@ class OAuthClientController extends AbstractController
         /*
          * Validation
          */
-        $this->validateOAuth2ClientRedirectRequest($request);
+        $request->validate([
+            'state'             => ['required', 'string', 'min:1'],
+            'code'              => ['string', 'min:1'],
+            'error'             => ['string'],
+            'error_description' => ['string'],
+        ], $request->input());
 
         /*
          * Params
@@ -61,23 +63,16 @@ class OAuthClientController extends AbstractController
 
     public function logout(Request $request)
     {
-        $redirectUri = $request->input('redirect_uri', null);
+        $redirectUri = filter_var($request->input('redirect_uri', url()->to('/')), FILTER_SANITIZE_URL);
         $everywhere  = boolval($request->input('everywhere', false));
 
-        $ssoClient = $this->context->ssoClient();
-
-        $sessionState = $ssoClient->getSessionState();
-        if (empty($sessionState)) {
-            $ssoClient->deleteState($sessionState);
-        }
-
-        return redirect($ssoClient->getLogoutUrl($redirectUri, $everywhere));
+        return $this->context->logout($redirectUri, $everywhere);
     }
 
     public function socialAuth(Request $request, $provider)
     {
-        $redirectUri = $request->input('redirect_uri', url()->to('/'));
+        $redirectUri = filter_var($request->input('redirect_uri', url()->to('/')), FILTER_SANITIZE_URL);
 
-        return redirect($this->context->ssoClient()->initSocialAuthCodeFlow($redirectUri, $provider));
+        return $this->context->initiateSocialLogin($provider, $redirectUri);
     }
 }
