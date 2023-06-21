@@ -19,6 +19,6 @@ class TokenDeleteListener
 
     public function handle(TokenDeleted $event)
     {
-        $this->context->ssoClient()->deleteState($event->token);
+        $this->context->apiClient()->invalidateTokenCache($event->token);
     }
 }
