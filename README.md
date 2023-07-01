@@ -10,7 +10,7 @@ Read the full [documentation](https://www.ssofy.com/docs/SDK/Laravel/Installatio
 ### Installing via Composer
 
 ```bash
-composer require ssofy/laravel
+composer require ssofy/laravel:^2.0.0
 ```
 
 ## Support
