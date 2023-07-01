@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.0.1 - 2023-07-01
+
+* Hotfix: fixed the token cache invalidation issue.
+
 ## 2.0.0 - 2023-06-18
 
 * Upgraded to `ssofy/php-sk:2.0.0`.
