@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.0.2 - 2023-07-30
+
+* php-sdk changes adaption.
+
 ## 2.0.1 - 2023-07-01
 
 * Hotfix: fixed the token cache invalidation issue.
