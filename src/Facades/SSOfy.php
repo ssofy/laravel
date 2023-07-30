@@ -10,15 +10,15 @@ use SSOfy\OAuth2Client;
 use SSOfy\OAuth2Config;
 
 /**
- * @method static Redirector|RedirectResponse initiateAuthorization()
- * @method static Redirector|RedirectResponse initiateAuthorizationWithToken()
- * @method static Redirector|RedirectResponse initiateSocialLogin()
- * @method static Redirector|RedirectResponse account()
- * @method static Redirector|RedirectResponse register()
- * @method static Redirector|RedirectResponse logout()
+ * @method static Redirector|RedirectResponse initiateAuthorization($redirectUri = null)
+ * @method static Redirector|RedirectResponse initiateAuthorizationWithToken($token = null, $nextUri = null)
+ * @method static Redirector|RedirectResponse initiateSocialLogin($provider, $nextUri = null)
+ * @method static Redirector|RedirectResponse initiateRegistration($nextUri = null)
+ * @method static Redirector|RedirectResponse profilePage()
+ * @method static Redirector|RedirectResponse logout($redirectUri = null, $everywhere = false)
  * @method static void logoutWithoutRedirect()
- * @method static OAuth2Client apiClient()
- * @method static OAuth2Client ssoClient()
+ * @method static OAuth2Client apiClient($config = null)
+ * @method static OAuth2Client ssoClient($config = null)
  * @method static APIConfig defaultAPIConfig()
  * @method static OAuth2Config defaultOAuth2Config()
  */

@@ -32,50 +32,50 @@ class Context
     {
         $config = $this->defaultOAuth2Config();
 
-        $uri = $config->getAuthorizeUrl();
+        $uri = $config->getAuthorizationUrl();
 
         return $this->initAuthCodeFlow($uri, $redirectUri, $config);
     }
 
     /**
      * @param string|null $token
-     * @param string|null $redirectUri
+     * @param string|null $nextUri
      * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
      */
-    public function initiateAuthorizationWithToken($token = null, $redirectUri = null)
+    public function initiateAuthorizationWithToken($token = null, $nextUri = null)
     {
         $config = $this->defaultOAuth2Config();
 
-        $uri = $config->getAuthorizeUrl($token);
+        $uri = $config->getAuthorizationUrl($token);
 
-        return $this->initAuthCodeFlow($uri, $redirectUri, $config);
+        return $this->initAuthCodeFlow($uri, $nextUri, $config);
     }
 
     /**
      * @param string $provider
-     * @param string|null $redirectUri
+     * @param string|null $nextUri
      * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
      */
-    public function initiateSocialLogin($provider, $redirectUri = null)
+    public function initiateSocialLogin($provider, $nextUri = null)
     {
         $config = $this->defaultOAuth2Config();
 
-        $uri = $config->getSocialAuthorizeUrl($provider);
+        $uri = $config->getSocialAuthorizationUrl($provider);
 
-        return $this->initAuthCodeFlow($uri, $redirectUri, $config);
+        return $this->initAuthCodeFlow($uri, $nextUri, $config);
     }
 
     /**
-     * @param string|null $redirectUri
+     * @param string|null $nextUri
      * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
      */
-    public function register($redirectUri = null)
+    public function initiateRegistration($nextUri = null)
     {
         $config = $this->defaultOAuth2Config();
 
-        $uri = $config->getRegisterUrl();
+        $uri = $config->getRegistrationUrl();
 
-        return $this->initAuthCodeFlow($uri, $redirectUri, $config);
+        return $this->initAuthCodeFlow($uri, $nextUri, $config);
     }
 
     /**
@@ -117,7 +117,10 @@ class Context
         $ssoClient->deleteState($sessionState);
     }
 
-    public function account()
+    /**
+     * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
+     */
+    public function profilePage()
     {
         return redirect($this->ssoClient()->getAccountUrl());
     }
@@ -201,9 +204,9 @@ class Context
         ]);
     }
 
-    private function initAuthCodeFlow($uri, $nextUri, $config)
+    private function initAuthCodeFlow($authorizationUri, $nextUri, $config)
     {
-        $state = $this->ssoClient($config)->initAuthCodeFlow($uri, $nextUri);
+        $state = $this->ssoClient($config)->initAuthCodeFlow($authorizationUri, $nextUri);
 
         $this->session->put(self::OAUTH2_WORKFLOW_STATE_SESSION_KEY, $state['state']);
 

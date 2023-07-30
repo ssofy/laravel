@@ -40,12 +40,11 @@ class OAuthClientController extends Controller
         /*
          * Params
          */
-        $state            = $request->input('state');
         $code             = $request->input('code');
         $error            = $request->input('error');
         $errorDescription = $request->input('error_description');
 
-        $stateData = $this->context->ssoClient()->continueAuthCodeFlow($state, $code);
+        $stateData = $this->context->ssoClient()->handleCallback($request->input());
 
         if (empty($stateData) && empty($error)) {
             $error            = 'invalid_state';
