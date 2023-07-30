@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use SSOfy\APIClient;
 use SSOfy\Exceptions\APIException;
+use SSOfy\Exceptions\InvalidStateException;
 use SSOfy\Exceptions\InvalidTokenException;
 use SSOfy\Exceptions\SignatureVerificationException;
 use SSOfy\Models\Token;
@@ -155,8 +156,13 @@ class ServiceGuard implements Guard
     public function token()
     {
         if ($this->request->acceptsHtml()) {
-            $state       = $this->getSessionState();
-            $accessToken = $this->oauth2Client->getAccessToken($state);
+            $state = $this->getSessionState();
+
+            try {
+                $accessToken = $this->oauth2Client->getAccessToken($state);
+            } catch (InvalidStateException $e) {
+                $accessToken = null;
+            }
         } else {
             $accessToken = $this->request->header('Authorization');
         }
