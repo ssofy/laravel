@@ -53,7 +53,7 @@ class SSOMiddleware
             $authorized = $this->auth->guard()->check();
         } catch (\SSOfy\Exceptions\InvalidTokenException $exception) {
             if (isset($state)) {
-                $oauth2Client->deleteState($state);
+                $oauth2Client->destroy($state);
             }
         } catch (\SSOfy\Exceptions\UserNotFoundException $exception) {
             throw $exception;

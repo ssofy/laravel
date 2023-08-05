@@ -114,7 +114,7 @@ class Context
             return;
         }
 
-        $ssoClient->deleteState($sessionState);
+        $ssoClient->destroy($sessionState);
     }
 
     /**
